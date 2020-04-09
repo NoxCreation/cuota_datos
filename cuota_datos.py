@@ -22,6 +22,8 @@
 # Obtiene cuánto le queda de datos de todo los tipos (nacional, 3g y 4g)
 # > cuota_datos cuota -t
 #
+# Descargar código fuente: https://github.com/JosueCarballo/cuota_datos
+# Licencia: Este código queda libererado bajo licencia GNP-GPL v3 de la Free Software Fundation y versiones posteriores.
 #***********************************************************************
 
 import json
@@ -29,7 +31,6 @@ import json
 import requests
 import urllib3
 from bs4 import BeautifulSoup
-import shutil
 
 import sys
 import argparse
@@ -40,12 +41,14 @@ def get_data():
     return json.loads(f.read())
 
 def conection(username, password):
+    """
+    :param username: Número de teléfono registrado en la plataforma de mi.cubacel.net
+    :param password: Contraseña registrada en la plataforma de mi.cubacel.net
+    :return: Interpretación de BeautifulSoup del código fuente de la pagina de datos del perfil
+    """
     urllib3.disable_warnings()
-    response = requests.get("https://mi.cubacel.net:8443/login/jsp/welcome-login.jsp?language=es", verify=False)
     r2 = requests.get("https://mi.cubacel.net:8443/login/images/cimg/86.jpg", verify=False,
                       cookies=requests.session().cookies, stream=True)
-    with open('D://img.png', 'wb') as out_file:
-        shutil.copyfileobj(r2.raw, out_file)
     data = {
         "language": "es_ES",
         "username": username,
@@ -53,16 +56,14 @@ def conection(username, password):
         "uword": "every"
     }
     r3 = requests.post("https://mi.cubacel.net:8443/login/Login", data=data, verify=False, cookies=r2.cookies)
-    url_redirect = r3.url
-
-    r4 = requests.get("https://mi.cubacel.net/primary/_-ia6uF56W", verify=False, cookies=r3.cookies)
     r5 = requests.get("https://mi.cubacel.net/primary/_-ijqJlSHh", verify=False, cookies=r3.cookies)
-    # print(r5.text)
-
     soup = BeautifulSoup(r5.text, "html.parser")
     return soup
 
 def get_info(soup):
+    """
+    :param soup: Valor resultante de la interpretación de BeautifulSoup del código fuente
+    """
     saldo = soup.find_all("span", {"class":"cvalue"})[0].find("span", {"class": "mbcHlightValue_msdp"}).getText()
     num_telf = soup.find_all("span", {"class":"cvalue"})[1].getText()
     vence = soup.find_all("span", {"class":"cvalue"})[2].getText()
@@ -72,6 +73,9 @@ def get_info(soup):
     print("Vencimiento: " + vence)
 
 def get_info_nac(soup):
+    """
+    :param soup: Valor resultante de la interpretación de BeautifulSoup del código fuente
+    """
     block = soup.find_all("div", {"class": "ac_block"})
     datos_nacional = soup.find("div", {"id": "myStat_bonusDataN"}).attrs.get("data-text", None) + " " + soup.find("div",{"id": "myStat_bonusDataN"}).attrs.get("data-info", None)
     expire_datos_nacional = block[0].find("div", {"class": "col2"}).find("div", "expires_date").getText() + " " + block[0].find("div", {"class": "col2"}).find("div", "expires_hours").getText()
@@ -80,6 +84,9 @@ def get_info_nac(soup):
     print("Vence: " + expire_datos_nacional)
 
 def get_info_dato4g(soup):
+    """
+    :param soup: Valor resultante de la interpretación de BeautifulSoup del código fuente
+    """
     block = soup.find_all("div", {"class": "ac_block"})
     datos_4g = soup.find("div", {"id": "myStat_30012"}).attrs.get("data-text", None) + " " + soup.find("div", {
         "id": "myStat_30012"}).attrs.get("data-info", None)
@@ -90,6 +97,9 @@ def get_info_dato4g(soup):
     print("Vence: " + expire_datos_4g)
 
 def get_info_dato3g(soup):
+    """
+    :param soup: Valor resultante de la interpretación de BeautifulSoup del código fuente
+    """
     block = soup.find_all("div", {"class": "ac_block"})
     datos_3g = soup.find("div", {"id": "myStat_3001"}).attrs.get("data-text", None) + " " + soup.find("div", {
         "id": "myStat_3001"}).attrs.get("data-info", None)
@@ -100,6 +110,9 @@ def get_info_dato3g(soup):
     print("Vence: " + expire_datos_3g)
 
 def get_info_todo(soup):
+    """
+    :param soup: Valor resultante de la interpretación de BeautifulSoup del código fuente
+    """
     block = soup.find_all("div", {"class": "ac_block"})
     datos_nacional = soup.find("div", {"id": "myStat_bonusDataN"}).attrs.get("data-text", None) + " " + soup.find("div", { "id": "myStat_bonusDataN"}).attrs.get(
         "data-info", None)
@@ -124,6 +137,7 @@ def get_info_todo(soup):
     print("Vence: " + expire_datos_4g)
 
 
+#Funcion que trata los argumentos de cuota
 def cuota_func(args):
     if args.nacional:
         try:
@@ -166,6 +180,7 @@ def cuota_func(args):
             print("")
             print("No se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales esten incorrectas.")
 
+#Funcion que trata los argumentos de perfil
 def perfil_func(args):
     if args.username:
         username = args.username
@@ -192,6 +207,7 @@ def perfil_func(args):
     else:
         print("Debe usar los argumentos -uss [USERNAME] -pss [PASSWORD]")
 
+#Funcion principal de arranque
 def main(args):
     parser = argparse.ArgumentParser(
         epilog=dedent("""\
@@ -215,7 +231,6 @@ def main(args):
 
     subparsers = parser.add_subparsers()
 
-    # Para la funcion de saludar
     cuota_parser = subparsers.add_parser('cuota')
     cuota_parser.set_defaults(func=cuota_func)
     cuota_parser.add_argument("-nac", "--nacional",
