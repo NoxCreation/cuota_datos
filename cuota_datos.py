@@ -5,22 +5,22 @@
 # DE ACCESO SON:
 #
 # Guardar tus credenciales para acceder a tus datos desde mi.cubacel.net
-# > cuota_datos perfil -uss [NUMEROTELF] -pss [CONTRASEÑA]
+# > cuota_datos perfil -u <NUMEROTELF> -p <CONTRASEÑA>
 #
 # Obtiene la información de la cuenta
 # > cuota_datos perfil -i
 #
 # Obtiene cuánto le queda de datos nacionales y fecha de vencimiento
-# > cuota_datos cuota -nac
+# > cuota_datos cuota -n
 #
 # Obtiene cuánto le queda de datos 3g y fecha de vencimiento
-# > cuota_datos cuota -umts
+# > cuota_datos cuota -3
 #
 # Obtiene cuánto le queda de datos 4g y fecha de vencimiento
-# > cuota_datos cuota -lte
+# > cuota_datos cuota -4
 #
 # Obtiene cuánto le queda de datos de todo los tipos (nacional, 3g y 4g)
-# > cuota_datos cuota -t
+# > cuota_datos cuota -a
 #
 # Descargar código fuente: https://github.com/JosueCarballo/cuota_datos
 # Licencia: Este código queda libererado bajo licencia GNP-GPL v3 de la Free Software Fundation y versiones posteriores.
@@ -139,47 +139,27 @@ def get_info_todo(soup):
 
 #Funcion que trata los argumentos de cuota
 def cuota_func(args):
-    if args.nacional:
-        try:
-            username = get_data()["username"]
-            password = get_data()["password"]
-            print("Buscando datos. Espere unos segundos...")
-            soup = conection(username, password)
+    # Todo: escoger las excepciones adecuadas para cada bloque try-except para cumplir con la PEP8
+    try:
+        username = get_data()["username"]
+        password = get_data()["password"]
+        print("Buscando datos. Espere unos segundos...")
+        soup = conection(username, password)
+    except:
+        print("\nNo se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales estén incorrectas.")
+    
+    try:
+        if args.nacional:
             get_info_nac(soup)
-        except:
-            print("")
-            print("No se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales esten incorrectas.")
-    elif args.dato4g:
-        try:
-            username = get_data()["username"]
-            password = get_data()["password"]
-            print("Buscando datos. Espere unos segundos...")
-            soup = conection(username, password)
+        elif args.dato4g:
             get_info_dato4g(soup)
-        except:
-            print("")
-            print("No se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales esten incorrectas.")
-    elif args.dato3g:
-        try:
-            username = get_data()["username"]
-            password = get_data()["password"]
-            print("Buscando datos. Espere unos segundos...")
-            soup = conection(username, password)
+        elif args.dato3g:
             get_info_dato3g(soup)
-        except:
-            print("")
-            print("No se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales esten incorrectas.")
-    elif args.todo:
-        try:
-            username = get_data()["username"]
-            password = get_data()["password"]
-            print("Buscando datos. Espere unos segundos...")
-            soup = conection(username, password)
+        elif args.todo:
             get_info_todo(soup)
-        except:
-            print("")
-            print("No se ha podido acceder a sus datos de cuota. Puede que no tenga conexión o que sus credenciales esten incorrectas.")
-
+    except:
+        pass
+        
 #Funcion que trata los argumentos de perfil
 def perfil_func(args):
     if args.username:
@@ -213,15 +193,15 @@ def main(args):
         epilog=dedent("""\
         Subcommands:
             perfil
-                -uss --username: Para guardar su usuario
-                -pss --password: Para guardar la contraseña
+                -u --username: Para guardar su usuario
+                -p --password: Para guardar la contraseña
                 -i  --info: Retorna información de la cuenta
 
             cuota
-                -nac  --nacional: Devuelve la información de cuota nacional
-                -lte  --dato4g: Devuelve la información de cuota 4g
-                -umts  --dato3g: Devuelve la información de cuota 3g
-                -t    --todo: Devuelve todos los datos de cuota
+                -n  --nacional: Devuelve la información de cuota nacional
+                -4  --dato4g: Devuelve la información de cuota 4g
+                -3  --dato3g: Devuelve la información de cuota 3g
+                -a    --all: Devuelve todos los datos de cuota
 
         Usa -h para obtener más información
         """),
@@ -233,36 +213,36 @@ def main(args):
 
     cuota_parser = subparsers.add_parser('cuota')
     cuota_parser.set_defaults(func=cuota_func)
-    cuota_parser.add_argument("-nac", "--nacional",
+    cuota_parser.add_argument("-n", "--nacional",
         action="store_true",
         help="Devuelve la información de cuota nacional"
     )
-    cuota_parser.add_argument("-lte", "--dato4g",
+    cuota_parser.add_argument("-4", "--dato4g",
         action="store_true",
         help="Devuelve la información de cuota 4g"
     )
-    cuota_parser.add_argument("-umts", "--dato3g",
+    cuota_parser.add_argument("-3", "--dato3g",
         action="store_true",
         help="Devuelve la información de cuota 3g"
     )
-    cuota_parser.add_argument("-t", "--todo",
+    cuota_parser.add_argument("-a", "--all",
         action="store_true",
-        help="Devuelve todos los datos de cuota de los datos moviles"
+        help="Devuelve todos los datos de cuota de los datos móviles"
     )
 
     perfil_parser = subparsers.add_parser('perfil')
     perfil_parser.set_defaults(func=perfil_func)
-    perfil_parser.add_argument("-uss", "--username",
+    perfil_parser.add_argument("-u", "--username",
         nargs="?",
         help="Guarda el usuario"
     )
-    perfil_parser.add_argument("-pss", "--password",
+    perfil_parser.add_argument("-p", "--password",
        nargs="?",
-       help="Guarda el password"
+       help="Guarda la contraseña"
     )
     perfil_parser.add_argument("-i", "--info",
        action="store_true",
-       help="Devuelve todos los datos de cuota"
+       help="Retorna información de la cuenta"
     )
 
     args = parser.parse_args()
