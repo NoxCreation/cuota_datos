@@ -16,8 +16,8 @@ setup(
         name='cuota_datos',
         author='Josué Carballo',
         author_email='josuecb@yandex.com',
-        version='0.1',
-        description='Devuelve el estado de la cuota de etecsa.',
+        version='0.2',
+        description='Para conocer y comprar datos móviles de Etecsa.',
         executables=executables,
         options={
             "bdist_msi": bdist_msi_options,
